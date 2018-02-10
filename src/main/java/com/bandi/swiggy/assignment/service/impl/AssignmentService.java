@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +56,9 @@ public class AssignmentService {
         }
 
         List<DriverDTO> availableDrivers = driverService.getAvailableDrivers(orderLocation);
+
+        log.info("Total Drivers found for processing {}", availableDrivers.size());
+
         Map<OrderDTO, Map<DriverDTO, Double>> orderDriverScoreMap = generateScoreMap(orders, availableDrivers);
         Map<OrderDTO, DriverDTO> orderToDriverMapping = getOptimalOrderDriverByScore(orders, orderDriverScoreMap);
 
@@ -73,11 +75,15 @@ public class AssignmentService {
     private Map<OrderDTO, DriverDTO> getOptimalOrderDriverByScore(List<OrderDTO> orders,
             Map<OrderDTO, Map<DriverDTO, Double>> orderDriverScoreMap) {
         Map<OrderDTO, DriverDTO> orderToDriverMapping =
-                algorithmService.getOptimalDriverOrderMapping(orderDriverScoreMap).entrySet().stream()
-                        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
+                algorithmService.getOptimalDriverOrderMapping(orderDriverScoreMap)/*.entrySet().stream()
+                        .filter(entry -> entry.getValue() != null && entry.getKey() != null)
+                        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey))*/;
+        
+        log.info("Total number of Orders after filtering {}", orderToDriverMapping.size());
 
         for (OrderDTO order : orders) {
             if (!orderToDriverMapping.containsKey(order)) {
+                // log.info("No Driver found for Order {}", order);
                 orderToDriverMapping.put(order, null);
             }
         }

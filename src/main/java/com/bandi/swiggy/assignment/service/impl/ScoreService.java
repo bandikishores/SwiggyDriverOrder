@@ -36,7 +36,7 @@ public class ScoreService {
     public double calculateScore(DriverDTO driver, OrderDTO order) {
         double score = 0;
         for (ICriteria iCriteria : allCriterias) {
-            score = iCriteria.getCriteriaScore(driver, order);
+            score += iCriteria.getCriteriaScore(driver, order);
         }
         return score;
     }

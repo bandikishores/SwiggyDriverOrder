@@ -11,6 +11,8 @@ import com.bandi.swiggy.assignment.algorithm.HungarianAlgorithm;
 import com.bandi.swiggy.assignment.dto.DriverDTO;
 import com.bandi.swiggy.assignment.dto.OrderDTO;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * 
  * Uses an Algorithm to find the most optimial pick between drivers & orders.
@@ -18,6 +20,7 @@ import com.bandi.swiggy.assignment.dto.OrderDTO;
  * @author kishore.bandi
  *
  */
+@Slf4j
 @Service
 public class AlgorithmService {
 
@@ -26,12 +29,12 @@ public class AlgorithmService {
      * 1. Create an index to Object map for both Order & Driver. This is used for easier creation of Cost Matrix. 
      * 2. Generate the cost matrix 
      * 3. Call Hungarian Algorithm 
-     * 4. create a Driver to Order map
+     * 4. create a Order to Driver map
      * 
      * @param orderDriverScoreMap
      * @return
      */
-    public Map<DriverDTO, OrderDTO>
+    public Map<OrderDTO, DriverDTO>
             getOptimalDriverOrderMapping(Map<OrderDTO, Map<DriverDTO, Double>> orderDriverScoreMap) {
         // Step 1:
         Map<Integer, OrderDTO> orderToIndexMap =
@@ -42,16 +45,30 @@ public class AlgorithmService {
         // Step 2:
         double[][] costMatrix = generateCostMatrix(orderDriverScoreMap, driverToIndexMap, orderToIndexMap);
 
+        log.info("The cost Matrix is {}", costMatrix);
+
         // Step 3:
-        int[] driverJobs = new HungarianAlgorithm(costMatrix).execute();
+        int[] orderJobs = new HungarianAlgorithm(costMatrix).execute();
+
+        log.info("Order jobs mapping {}", orderJobs);
 
         // Step 4:
-        Map<DriverDTO, OrderDTO> driverToOrderMap = new HashMap<>();
+        /* Map<DriverDTO, OrderDTO> driverToOrderMap = new HashMap<>();
         for (int driverIndex = 0; driverIndex < driverJobs.length; driverIndex++) {
-            driverToOrderMap.put(driverToIndexMap.get(driverIndex), orderToIndexMap.get(driverJobs[driverIndex]));
+            if (driverToIndexMap.get(driverIndex) != null) {
+                driverToOrderMap.put(driverToIndexMap.get(driverIndex), orderToIndexMap.get(driverJobs[driverIndex]));
+            }
         }
+        log.info("Number of Drivers found {}", driverJobs.length);
+        log.info("Number of Drivers and orders mapped {}", driverToOrderMap.size());*/
 
-        return driverToOrderMap;
+        Map<OrderDTO, DriverDTO> orderToDriverMap = new HashMap<>();
+        for (int orderIndex = 0; orderIndex < orderJobs.length; orderIndex++) {
+            if (orderToIndexMap.get(orderIndex) != null) {
+                orderToDriverMap.put(orderToIndexMap.get(orderIndex), driverToIndexMap.get(orderJobs[orderIndex]));
+            }
+        }
+        return orderToDriverMap;
     }
 
     private double[][] generateCostMatrix(Map<OrderDTO, Map<DriverDTO, Double>> orderDriverScoreMap,

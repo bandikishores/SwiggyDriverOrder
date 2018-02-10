@@ -54,8 +54,12 @@ public class OrderProcessor {
         try {
             processingLock.lock();
             List<OrderDTO> unprocessedOrdersForLocn = orderService.getUnprocessedOrdersForLocn(locn);
+
+            log.info("Total Orders found for processing {}", unprocessedOrdersForLocn.size());
+
             Map<OrderDTO, DriverDTO> assignDriversToOrders =
                     assignmentService.assignDriversToOrders(unprocessedOrdersForLocn, locn);
+
             for (Entry<OrderDTO, DriverDTO> entry : assignDriversToOrders.entrySet()) {
                 if (entry.getValue() != null) {
                     driverService.assignOrderToDriver(entry.getKey(), entry.getValue());
