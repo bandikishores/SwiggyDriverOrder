@@ -49,8 +49,8 @@ A sample code to assign drivers to orders
 
 * Get All Orders
 	```
-  curl -X GET http://localhost:8080/orders`
-  ``
+  curl -X GET http://localhost:8080/orders
+  ```
 
 * Create Random 10 Drivers
 	```
