@@ -14,7 +14,7 @@ A sample code to assign drivers to orders
     These values can be changed in runtime by calling reload configuration.
     * Default Provided -
       * *Driver to Restaurant Distance* - Default value provided is 0.1
-      * *Order Delay Time* - Default Value is 1.0 (*Since for score selection lower is better - the higher the order waiting time, the faster this order needs to be assigned. Meaning the lower score should be, so code for now uses a Max. wait time and subtracts the current wait time with max. time to calculate score. That way the one waiting the longest will get the order first)
+      * *Order Delay Time* - Default Value is 1.0 (*Since for score selection lower is better - the higher the order waiting time, the faster this order needs to be assigned. Meaning the lower score should be, so code for now uses a Max. wait time and subtracts the current wait time with max. time to calculate score. That way the one waiting the longest will get the order first*)
       * *Driver Free Time* - Default Value is 1.0 (*Same as above, higher Driver free time more orders should be given*)
 * *Code Entensibility* - 
   * **Criteria** - If newer criteria needs to be added, its a simple task of just implmenting ```ICriteria``` Interface and adding ```@CriteriaQualifier``` annotation to that class.<br/>
@@ -29,7 +29,7 @@ A sample code to assign drivers to orders
 * Order Processor will be called for a set of Orders and Drivers belonging to a particular Area code and not for entire city. (*Caller should handle this*)
 * No Test cases have been added as everything here works in Simulation.
 * Distance between resturants is calculated by simply subtrating the areacodes, in real time it'll be an external system which will do that. For now, even that is abstracted in ```LocationService``` so changing the API will not effect the code.
-* Some Criteria's are Inverse Match. Ex: Driver Free Time, If its higher we need to deliver the order faster. So score for them is computed by subtracting current value with a max. value.
+* Some Criteria's are Inverse Match. <br/>Ex: Driver Free Time, If its higher we need to deliver the order faster. So score for them is computed by subtracting current value with a max. value.
 * Synchronization of Configuration reload while assignment is happening parallely is not handled. It requires a centralized lock using Redis/Zookeeper to make sure all servers reload the configuration at the same time.
 
 ## Flow
