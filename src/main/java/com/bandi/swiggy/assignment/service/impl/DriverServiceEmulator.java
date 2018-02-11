@@ -26,15 +26,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor = @__({ @Autowired}))
 public class DriverServiceEmulator implements DriverService {
 
-    private List<DriverDTO>       availableDrivers   = new ArrayList<>();
+    private List<DriverDTO>       availableDrivers     = new ArrayList<>();
 
-    private List<DriverDTO>       unAvailableDrivers = new ArrayList<>();
+    private List<DriverDTO>       unAvailableDrivers   = new ArrayList<>();
 
-    private Integer               driverId           = 1;
+    private Integer               driverId             = 1;
 
-    private Integer               minWaitTimeInSec   = 0;
+    private Integer               minWaitTimeInSec     = 0;
 
-    private Integer               maxWaitTimeInSec   = 500;
+    public static Integer         MAX_WAIT_TIME_IN_SEC = 500;
 
     private final LocationService LocationService;
 
@@ -63,11 +63,11 @@ public class DriverServiceEmulator implements DriverService {
     }
 
     private Integer getRandomWaitTime() {
-        return ThreadLocalRandom.current().nextInt(maxWaitTimeInSec - minWaitTimeInSec + 1) + minWaitTimeInSec;
+        return ThreadLocalRandom.current().nextInt(MAX_WAIT_TIME_IN_SEC - minWaitTimeInSec + 1) + minWaitTimeInSec;
     }
 
     @Override
-    public void assignOrderToDriver(OrderDTO order, DriverDTO driver) {
+    public synchronized void assignOrderToDriver(OrderDTO order, DriverDTO driver) {
         driver.setAvailable(false);
         availableDrivers.remove(driver);
         unAvailableDrivers.add(driver);
@@ -79,5 +79,15 @@ public class DriverServiceEmulator implements DriverService {
         driverList.addAll(availableDrivers);
         driverList.addAll(unAvailableDrivers);
         return driverList;
+    }
+
+    @Override
+    public synchronized void reset() {
+        unAvailableDrivers.stream().forEach(driver -> {
+            driver.setAvailable(true);
+            availableDrivers.add(driver);
+        });
+        unAvailableDrivers.clear();
+
     }
 }

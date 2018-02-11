@@ -286,7 +286,7 @@ public class HungarianAlgorithm {
     }
 
     public static void main(String[] args) {
-        double[][] costMatrix = { { 1500, 4000, 4500}, { 2000, 6000, 3500}, { 2000, 4000, 2500}};
+        double[][] costMatrix = { { 84.0, 45.0, 123, 3.0 }};
         int[] execute = new HungarianAlgorithm(costMatrix).execute();
         Arrays.stream(execute).forEach(System.out::println);
     }

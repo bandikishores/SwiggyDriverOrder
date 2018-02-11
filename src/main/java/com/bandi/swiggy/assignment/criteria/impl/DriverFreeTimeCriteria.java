@@ -11,6 +11,7 @@ import com.bandi.swiggy.assignment.dto.DriverDTO;
 import com.bandi.swiggy.assignment.dto.OrderDTO;
 import com.bandi.swiggy.assignment.exception.OrderAssignmentException;
 import com.bandi.swiggy.assignment.manager.CriteriaManager;
+import com.bandi.swiggy.assignment.service.impl.DriverServiceEmulator;
 
 /**
  * 
@@ -35,9 +36,13 @@ public class DriverFreeTimeCriteria implements ICriteria {
         return new CriteriaConfiguration(getCriteriaType(), 1.0);
     }
 
+    /**
+     * Negate the actual value with Max. value so this criteria will get higher precedence.
+     */
     @Override
     public Double getCriteriaScore(DriverDTO driver, OrderDTO order) {
-        return driver.getDriverFreeTimeInSec() * configuration.getValue();
+        return (DriverServiceEmulator.MAX_WAIT_TIME_IN_SEC - driver.getDriverFreeTimeInSec())
+                * configuration.getValue();
     }
 
     @Override

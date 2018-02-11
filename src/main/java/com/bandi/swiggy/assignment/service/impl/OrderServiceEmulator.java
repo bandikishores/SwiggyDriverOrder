@@ -28,15 +28,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(onConstructor = @__({ @Autowired}))
 public class OrderServiceEmulator implements OrderService {
 
-    private List<OrderDTO>        unprocessedOrders = new ArrayList<>();
+    private List<OrderDTO>        unprocessedOrders    = new ArrayList<>();
 
-    private List<OrderDTO>        processedOrders   = new ArrayList<>();
+    private List<OrderDTO>        processedOrders      = new ArrayList<>();
 
-    private Integer               orderId           = 1;
+    private Integer               orderId              = 1;
 
-    private Integer               minWaitTimeInSec  = 0;
+    private Integer               minWaitTimeInSec     = 0;
 
-    private Integer               maxWaitTimeInSec  = 500;
+    public static Integer         MAX_WAIT_TIME_IN_SEC = 500;
 
     private final LocationService locationService;
 
@@ -66,10 +66,10 @@ public class OrderServiceEmulator implements OrderService {
     }
 
     private Integer getRandomWaitTime() {
-        return ThreadLocalRandom.current().nextInt(maxWaitTimeInSec - minWaitTimeInSec + 1) + minWaitTimeInSec;
+        return ThreadLocalRandom.current().nextInt(MAX_WAIT_TIME_IN_SEC - minWaitTimeInSec + 1) + minWaitTimeInSec;
     }
 
-    public void assignOrderToDriver(OrderDTO order, DriverDTO driver) {
+    public synchronized void assignOrderToDriver(OrderDTO order, DriverDTO driver) {
         order.setDriver(driver);
         unprocessedOrders.remove(order);
         processedOrders.add(order);
@@ -86,6 +86,15 @@ public class OrderServiceEmulator implements OrderService {
     @Override
     public List<OrderDTO> getUnprocessedOrdersForLocn(LocationDTO locn) {
         return unprocessedOrders;
+    }
+
+    @Override
+    public void reset() {
+        processedOrders.stream().forEach(order -> {
+            order.setDriver(null);
+            unprocessedOrders.add(order);
+        });
+        processedOrders.clear();
     }
 
 }

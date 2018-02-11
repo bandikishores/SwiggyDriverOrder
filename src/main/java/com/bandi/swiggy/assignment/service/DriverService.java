@@ -22,5 +22,8 @@ public interface DriverService {
     public void assignOrderToDriver(OrderDTO order, DriverDTO driver);
 
     public List<DriverDTO> getAllDrivers();
+    
+    // This is a hack used to undo the assignment for the same set of orders.
+    public void reset();
 
 }

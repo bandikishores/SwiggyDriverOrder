@@ -26,7 +26,7 @@ public class ScoreService {
 
     /**
      * 
-     * Method which calculates the score for a given driver and order combination. Higher the score better is the driver
+     * Method which calculates the score for a given driver and order combination. Lower the score better is the driver
      * to order relation.
      * 
      * @param driver

@@ -44,12 +44,10 @@ public class AlgorithmService {
 
         // Step 2:
         double[][] costMatrix = generateCostMatrix(orderDriverScoreMap, driverToIndexMap, orderToIndexMap);
-
         log.info("The cost Matrix is {}", costMatrix);
 
         // Step 3:
         int[] orderJobs = new HungarianAlgorithm(costMatrix).execute();
-
         log.info("Order jobs mapping {}", orderJobs);
 
         // Step 4:

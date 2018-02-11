@@ -3,6 +3,7 @@ package com.bandi.swiggy.assignment.service.impl;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -16,6 +17,7 @@ import com.bandi.swiggy.assignment.dto.OrderDTO;
 import com.bandi.swiggy.assignment.exception.OrderAssignmentException;
 import com.bandi.swiggy.assignment.filter.IFilter;
 import com.bandi.swiggy.assignment.service.DriverService;
+import com.bandi.swiggy.assignment.service.OrderService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +35,8 @@ import lombok.extern.slf4j.Slf4j;
 public class AssignmentService {
 
     private final DriverService    driverService;
+
+    private final OrderService     orderService;
 
     private final ScoreService     scoreService;
 
@@ -56,13 +60,29 @@ public class AssignmentService {
         }
 
         List<DriverDTO> availableDrivers = driverService.getAvailableDrivers(orderLocation);
-
         log.info("Total Drivers found for processing {}", availableDrivers.size());
+
+        if (availableDrivers.size() == 0) {
+            log.info("No Drivers found to process order");
+            return new HashMap<>();
+        }
 
         Map<OrderDTO, Map<DriverDTO, Double>> orderDriverScoreMap = generateScoreMap(orders, availableDrivers);
         Map<OrderDTO, DriverDTO> orderToDriverMapping = getOptimalOrderDriverByScore(orders, orderDriverScoreMap);
 
+        updateOrdersAndDrivers(orderToDriverMapping);
         return orderToDriverMapping;
+    }
+
+    private void updateOrdersAndDrivers(Map<OrderDTO, DriverDTO> orderToDriverMapping) {
+        for (Entry<OrderDTO, DriverDTO> entry : orderToDriverMapping.entrySet()) {
+            if (entry.getValue() != null) {
+                driverService.assignOrderToDriver(entry.getKey(), entry.getValue());
+                orderService.assignOrderToDriver(entry.getKey(), entry.getValue());
+            } else {
+                log.info("Could not find any driver for order {}", entry.getKey());
+            }
+        }
     }
 
     /**
@@ -75,15 +95,9 @@ public class AssignmentService {
     private Map<OrderDTO, DriverDTO> getOptimalOrderDriverByScore(List<OrderDTO> orders,
             Map<OrderDTO, Map<DriverDTO, Double>> orderDriverScoreMap) {
         Map<OrderDTO, DriverDTO> orderToDriverMapping =
-                algorithmService.getOptimalDriverOrderMapping(orderDriverScoreMap)/*.entrySet().stream()
-                        .filter(entry -> entry.getValue() != null && entry.getKey() != null)
-                        .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey))*/;
-        
-        log.info("Total number of Orders after filtering {}", orderToDriverMapping.size());
-
+                algorithmService.getOptimalDriverOrderMapping(orderDriverScoreMap);
         for (OrderDTO order : orders) {
             if (!orderToDriverMapping.containsKey(order)) {
-                // log.info("No Driver found for Order {}", order);
                 orderToDriverMapping.put(order, null);
             }
         }
@@ -104,7 +118,7 @@ public class AssignmentService {
 
         for (OrderDTO order : orders) {
             for (DriverDTO driver : availableDrivers) {
-                if (!shouldProcessOrder(order, driver)) {
+                if (!filter(order, driver)) {
                     continue;
                 } else {
                     double score = scoreService.calculateScore(driver, order);
@@ -121,13 +135,13 @@ public class AssignmentService {
 
     /**
      * 
-     * calls all the filters registered to filter out any order or driver.
+     * calls all the filters registered, in order filter out any order or driver.
      * 
      * @param order
      * @param driver
      * @return
      */
-    private boolean shouldProcessOrder(OrderDTO order, DriverDTO driver) {
+    private boolean filter(OrderDTO order, DriverDTO driver) {
         Optional<IFilter> optionalFilter =
                 allFilters.stream().filter(filter -> !filter.isEligible(driver, order)).findAny();
         if (optionalFilter.isPresent()) {

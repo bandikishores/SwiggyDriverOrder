@@ -15,4 +15,7 @@ public interface OrderService {
     public List<OrderDTO> getAllOrders();
 
     public List<OrderDTO> getUnprocessedOrdersForLocn(LocationDTO locn);
+
+    // This is a hack used to undo the assignment for the same set of orders.
+    public void reset();
 }
