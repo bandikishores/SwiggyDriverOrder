@@ -31,6 +31,7 @@ A sample code to assign drivers to orders
 * Distance between resturants is calculated by simply subtrating the areacodes, in real time it'll be an external system which will do that. For now, even that is abstracted in ```LocationService``` so changing the API will not effect the code.
 * Some Criteria's are Inverse Match. <br/>Ex: Driver Free Time, If its higher we need to deliver the order faster. So score for them is computed by subtracting current value with a max. value.
 * Synchronization of Configuration reload while assignment is happening parallely is not handled. It requires a centralized lock using Redis/Zookeeper to make sure all servers reload the configuration at the same time.
+* Scenario's of having too many drivers/orders in memory, Too much of values for Criteria Configuration and too many values to Hungarian Algorithm is not handled. This can be easily handled by having a limit in ```AssignmentService```  to process only a certain set of orders/drivers at any point in time.
 
 ## Flow
 * Create a set of Drivers
